@@ -1,0 +1,26 @@
+# Number of targets and antitargets to select
+protein_selection:
+  weekly_target: "Q13547"
+  num_antitargets: 2
+
+# Parameters for validating and scoring molecules
+molecule_validation:
+  # Scoring weights for target/antitarget binding
+  antitarget_weight: 0.9
+  # Scoring weights for entropy
+  entropy_bonus_threshold: 0
+  entropy_start_weight: 0.3
+  entropy_start_epoch: 18005
+  entropy_step_size: 0.007142857  # 1/140 to increase by 1.0 over about 1 week
+
+  # Molecular property requirements
+  min_heavy_atoms: 20
+  min_rotatable_bonds: 1
+  max_rotatable_bonds: 10
+  # Number of molecules to validate with PSICHIC
+  num_molecules: 100
+
+# Reaction filtering configuration
+reaction_filtering:
+  random_valid_reaction: true  # true = one random reaction per epoch, false = all reactions valid
+
