@@ -226,3 +226,33 @@ if __name__ == "__main__":
     config = get_config()
     setup_logging(config)
     asyncio.run(main(config))
+
+
+def miner_main(payload):
+    # Minimal shim: trigger existing pipeline and direct outputs to /output.
+    out_dir = os.environ.get("OUTPUT_DIR", "/output")
+    os.makedirs(out_dir, exist_ok=True)
+
+    cfg = load_config()
+    # Use provided target if present; otherwise keep miner's own config/selection.
+    target = payload.get("target")
+    target_proteins = [target] if isinstance(target, str) and target else []
+    antitarget_proteins = []
+
+    # Derive loop parameters from existing config
+    n_samples = cfg["num_molecules"] * 5
+    top_x = cfg["num_molecules"]
+
+    sampler_file_path = os.path.join(out_dir, "sampler.json")
+    output_path = os.path.join(out_dir, "output.json")
+
+    iterative_sampling_loop(
+        n_samples=n_samples,
+        top_x=top_x,
+        target_proteins=target_proteins,
+        antitarget_proteins=antitarget_proteins,
+        sampler_file_path=sampler_file_path,
+        output_path=output_path,
+        subnet_config=cfg,
+    )
+    return
