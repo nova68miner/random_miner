@@ -52,13 +52,14 @@ async def process_epoch(config, current_block, metagraph, subtensor, wallet):
 
         bt.logging.info(f"Using target proteins: {target_proteins}, antitarget proteins: {antitarget_proteins}")
 
+        output_dir = os.environ.get("OUTPUT_DIR", BASE_DIR)
         iterative_sampling_loop(
             n_samples=config.num_molecules * 5, # 5x the number of molecules to select top x 
             top_x=config.num_molecules,
             target_proteins=target_proteins,
             antitarget_proteins=antitarget_proteins,
-            sampler_file_path=os.path.join(BASE_DIR, "sampler_file.json"), 
-            output_path=os.path.join(BASE_DIR, "output.json"), 
+            sampler_file_path=os.path.join(output_dir, "sampler_file.json"), 
+            output_path=os.path.join(output_dir, "output.json"), 
             subnet_config=config
             )
 
