@@ -1,5 +1,5 @@
 """
-PSICHIC-based molecular scoring functionality for the validator
+PSICHIC-based molecular scoring functionality
 """
 
 import math
@@ -179,6 +179,12 @@ def read_data_from_json(path: str) -> pd.DataFrame:
     # structure as in uid_to_data
     if isinstance(data, dict):
         data = [data]
+
+    # if "uid" not in data[0], add it - for random sampler, assign uid=0
+    if "uid" not in data[0]:
+        data = [{"uid": 0, "result": {"molecules": data[0]["molecules"]}}]
+
+    # Every other miner will have a "uid" field
     uid_to_data = {item["uid"]: {"molecules": item["result"]["molecules"]} for item in data}
 
     return uid_to_data
@@ -218,7 +224,6 @@ def score_molecules_json(
     # Check validity of submissions
     valid_molecules_by_uid = validate_molecules_and_calculate_entropy(uid_to_data, score_dict, subnet_config)
     
-
     # Score with PSICHIC
     if psichic is None:
         psichic = PsichicWrapper()

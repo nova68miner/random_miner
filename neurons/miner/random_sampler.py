@@ -92,7 +92,7 @@ def generate_valid_random_molecules_batch(rxn_id: int, n_samples: int, db_path: 
     reaction_info = get_reaction_info(rxn_id, db_path)
     if not reaction_info:
         bt.logging.error(f"Could not get reaction info for rxn_id {rxn_id}")
-        return make_molecule_dict([None] * n_samples)
+        return {"molecules": [None] * n_samples}
     
     smarts, roleA, roleB, roleC = reaction_info
     is_three_component = roleC is not None and roleC != 0
@@ -104,7 +104,7 @@ def generate_valid_random_molecules_batch(rxn_id: int, n_samples: int, db_path: 
     
     if not molecules_A or not molecules_B or (is_three_component and not molecules_C):
         bt.logging.error(f"No molecules found for roles A={roleA}, B={roleB}, C={roleC}")
-        return make_molecule_dict([None] * n_samples)
+        return {"molecules": [None] * n_samples}
     
     valid_molecules = []
     seen_keys = set()
@@ -129,7 +129,7 @@ def generate_valid_random_molecules_batch(rxn_id: int, n_samples: int, db_path: 
         )
         
         # Validate the batch
-        batch_sampler_data = make_molecule_dict(batch_molecules)
+        batch_sampler_data = {"molecules": batch_molecules}
         batch_valid_molecules, batch_valid_smiles = validate_molecules_sampler(batch_sampler_data, subnet_config)
 
         # Deduplicate inside the batch (keep first per InChIKey)
@@ -168,7 +168,7 @@ def generate_valid_random_molecules_batch(rxn_id: int, n_samples: int, db_path: 
     final_molecules = valid_molecules[:n_samples]
     progress_bar.close()
 
-    return make_molecule_dict(final_molecules)
+    return {"molecules": final_molecules}
 
 
 def generate_molecules_from_pools(rxn_id: int, n: int, molecules_A: List[Tuple], molecules_B: List[Tuple], 
@@ -213,23 +213,6 @@ def generate_molecules_from_pools(rxn_id: int, n: int, molecules_A: List[Tuple],
             mol_ids.append(None)
     
     return mol_ids
-
-
-def make_molecule_dict(molecules: List[str]) -> dict:
-    """
-    Makes a dictionary of molecules for downstream processing.
-    """
-
-    content = {"uid": 0,
-            "block_number": 0,
-            "owner": "random_sampler",
-            "repo": "",
-            "branch": "",
-            "raw": "",
-            "result": {"molecules": molecules}
-            }
-    
-    return content
 
 
 def run_sampler(n_samples: int = 1000, seed: int = None, subnet_config: dict = None, output_path: str = None, save_to_file: bool = True):

@@ -186,8 +186,7 @@ def validate_molecules_sampler(
         Dictionary mapping UIDs to their list of valid SMILES strings
     """
     
-    uid = sampler_data["uid"]
-    molecules = sampler_data["result"]["molecules"]
+    molecules = sampler_data["molecules"]
 
     valid_smiles = []
     valid_names = []
@@ -195,37 +194,30 @@ def validate_molecules_sampler(
     for molecule in molecules:
         try:
             if molecule is None:
-                #bt.logging.debug(f"UID={uid} submission contains failed reactions")
                 continue
             
             smiles = get_smiles(molecule)
             if not smiles:
-                #bt.logging.debug(f"No valid SMILES found for UID={uid}, molecule='{molecule}'")
                 continue
             
             if get_heavy_atom_count(smiles) < config['min_heavy_atoms']:
-                #bt.logging.debug(f"UID={uid}, molecule='{molecule}' has insufficient heavy atoms")
                 continue
 
             try:    
                 mol = Chem.MolFromSmiles(smiles)
                 num_rotatable_bonds = Descriptors.NumRotatableBonds(mol)
                 if num_rotatable_bonds < config['min_rotatable_bonds'] or num_rotatable_bonds > config['max_rotatable_bonds']:
-                    #bt.logging.debug(f"UID={uid}, molecule='{molecule}' has an invalid number of rotatable bonds")
                     continue
             except Exception as e:
-                bt.logging.warning(f"Molecule is not parseable by RDKit for UID={uid}, molecule='{molecule}': {e}")
                 continue
             
             # Check if the molecule is unique for the target protein (weekly_target)
             if not molecule_unique_for_protein_hf(config['weekly_target'], smiles):
-                #bt.logging.warning(f"UID={uid}, molecule='{molecule}' is not unique for protein '{config['weekly_target']}'")
                 continue
     
             valid_smiles.append(smiles)
             valid_names.append(molecule)
         except Exception as e:
-            bt.logging.error(f"Error validating molecule for UID={uid}, molecule='{molecule}': {e}")
             continue
         
     return valid_names, valid_smiles
