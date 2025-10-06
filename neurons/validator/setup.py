@@ -40,7 +40,8 @@ def setup_logging(config):
     in the same directory as this Python file
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    bt.logging(config=config, logging_dir=script_dir, record_log=True)
+    logging_dir = os.environ.get("OUTPUT_DIR", script_dir)
+    bt.logging(config=config, logging_dir=logging_dir, record_log=True)
 
     bt.logging.info(f"Running validator for subnet: {config.netuid} on network: {config.subtensor.network} with config:")
     bt.logging.info(config)
