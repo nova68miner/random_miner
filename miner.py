@@ -14,6 +14,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 #sys.path.append(BASE_DIR)
 
 from config.config_loader import load_config
+from neurons.validator.setup import setup_logging
 
 from utils import get_challenge_params_from_blockhash
 from neurons.validator.setup import get_config, setup_logging, check_registration
@@ -245,6 +246,13 @@ def miner_main(payload):
     os.makedirs(out_dir, exist_ok=True)
 
     cfg = load_config()
+    # Initialize BitTensor logging to the mounted output dir
+    try:
+        cfg.logging.logging_dir = out_dir
+        cfg.full_path = out_dir
+        setup_logging(cfg)
+    except Exception:
+        pass
     # Use provided target if present; otherwise keep miner's own config/selection.
     target = payload.get("target")
     target_proteins = [target] if isinstance(target, str) and target else []
