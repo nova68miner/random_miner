@@ -11,27 +11,22 @@ import pandas as pd
 from rdkit import Chem
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-#sys.path.append(BASE_DIR)
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(PARENT_DIR)
 
-from config.config_loader import load_config
-from neurons.validator.setup import setup_logging
+from nova_ph2.config.config_loader import load_config
 
-from utils import get_challenge_params_from_blockhash
-from neurons.validator.setup import get_config, setup_logging, check_registration
-from neurons.validator.scoring import score_molecules_json
-import neurons.validator.scoring as scoring_module
-from neurons.miner.random_sampler import run_sampler
-from combinatorial_db.reactions import get_smiles_from_reaction
-
-# Initialize global components (lazy loading for models)
-#psichic = None
-#scoring_module.BASE_DIR = BASE_DIR
+from nova_ph2.utils import get_challenge_params_from_blockhash
+from nova_ph2.neurons.validator.setup import get_config, setup_logging
+from nova_ph2.neurons.validator.scoring import score_molecules_json
+import nova_ph2.neurons.validator.scoring as scoring_module
+from random_sampler import run_sampler
+from nova_ph2.combinatorial_db.reactions import get_smiles_from_reaction
 
 async def process_epoch(config, current_block, metagraph, subtensor):
     """
     Process a single epoch end-to-end.
     """
-    global psichic
     try:
         start_block = current_block - config.epoch_length
         start_block_hash = await subtensor.determine_block_hash(start_block)
@@ -55,11 +50,13 @@ async def process_epoch(config, current_block, metagraph, subtensor):
         bt.logging.info(f"Using target proteins: {target_proteins}, antitarget proteins: {antitarget_proteins}")
 
         output_dir = os.environ.get("OUTPUT_DIR", BASE_DIR)
+        db_path = os.path.join(PARENT_DIR, "nova_ph2", "combinatorial_db", "molecules.sqlite")
         iterative_sampling_loop(
             n_samples=config.num_molecules * 5, # 5x the number of molecules to select top x 
             top_x=config.num_molecules,
             target_proteins=target_proteins,
             antitarget_proteins=antitarget_proteins,
+            db_path=db_path,
             sampler_file_path=os.path.join(output_dir, "sampler_file.json"), 
             output_path=os.path.join(output_dir, "output.json"), 
             subnet_config=config,
@@ -78,6 +75,7 @@ def iterative_sampling_loop(
     top_x: int,
     target_proteins: list[str],
     antitarget_proteins: list[str],
+    db_path: str,
     sampler_file_path: str,
     output_path: str,
     subnet_config: dict,
@@ -99,7 +97,12 @@ def iterative_sampling_loop(
         iteration += 1
         bt.logging.info(f"[Miner] Iteration {iteration}: sampling {n_samples} molecules")
 
-        sampler_data = run_sampler(n_samples=n_samples, subnet_config=subnet_config, output_path=sampler_file_path)
+        sampler_data = run_sampler(n_samples=n_samples, 
+                        subnet_config=subnet_config, 
+                        output_path=sampler_file_path,
+                        save_to_file=True,
+                        db_path=db_path,
+                        )
         
         if not sampler_data:
             bt.logging.warning("[Miner] No valid molecules produced; continuing")
@@ -246,13 +249,6 @@ def miner_main(payload):
     os.makedirs(out_dir, exist_ok=True)
 
     cfg = load_config()
-    # Initialize BitTensor logging to the mounted output dir
-    try:
-        cfg.logging.logging_dir = out_dir
-        cfg.full_path = out_dir
-        setup_logging(cfg)
-    except Exception:
-        pass
     # Use provided target if present; otherwise keep miner's own config/selection.
     target = payload.get("target")
     target_proteins = [target] if isinstance(target, str) and target else []
