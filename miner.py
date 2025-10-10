@@ -153,7 +153,7 @@ def calculate_final_scores(score_dict: dict,
 
 def main(config: dict):
     iterative_sampling_loop(
-        db_path=os.path.join(PARENT_DIR, "nova_ph2", "combinatorial_db", "molecules.sqlite")
+        db_path=os.path.join(PARENT_DIR, "nova_ph2", "combinatorial_db", "molecules.sqlite"),
         sampler_file_path=os.path.join(BASE_DIR, "sampler_file.json"),
         output_path=os.path.join(BASE_DIR, "output.json"),
         config=config,
