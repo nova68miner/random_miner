@@ -8,12 +8,9 @@ from rdkit import Chem
 from tqdm import tqdm
 
 import sys
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-NOVA_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
-if NOVA_DIR not in sys.path:
-    sys.path.append(NOVA_DIR)
 
-from nova_ph2.config.config_loader import load_config
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 from miner_utils import validate_molecules_sampler
 from nova_ph2.combinatorial_db.reactions import (
     get_reaction_info, 
