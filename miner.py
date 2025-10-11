@@ -9,6 +9,8 @@ import time
 import bittensor as bt
 import pandas as pd
 from rdkit import Chem
+from pathlib import Path
+import nova_ph2
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -18,6 +20,8 @@ from nova_ph2.neurons.validator.scoring import score_molecules_json
 import nova_ph2.neurons.validator.scoring as scoring_module
 from random_sampler import run_sampler
 from nova_ph2.combinatorial_db.reactions import get_smiles_from_reaction
+
+DB_PATH = str(Path(nova_ph2.__file__).resolve().parent / "combinatorial_db" / "molecules.sqlite")
 
 def get_config(input_file: os.path = os.path.join(BASE_DIR, "input.json")):
     """
@@ -153,7 +157,7 @@ def calculate_final_scores(score_dict: dict,
 
 def main(config: dict):
     iterative_sampling_loop(
-        db_path=os.path.join(PARENT_DIR, "nova_ph2", "combinatorial_db", "molecules.sqlite"),
+        db_path=DB_PATH,
         sampler_file_path=os.path.join(BASE_DIR, "sampler_file.json"),
         output_path=os.path.join(BASE_DIR, "output.json"),
         config=config,
