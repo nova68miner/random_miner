@@ -37,7 +37,7 @@ def iterative_sampling_loop(
     sampler_file_path: str,
     output_path: str,
     config: dict,
-    save_all_scores: bool = True
+    save_all_scores: bool = False
 ) -> None:
     """
     Infinite loop, runs until orchestrator kills it:
