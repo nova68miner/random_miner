@@ -216,7 +216,7 @@ def run_sampler(n_samples: int = 1000,
                 seed: int = None, 
                 subnet_config: dict = None, 
                 output_path: str = None, 
-                save_to_file: bool = True,
+                save_to_file: bool = False,
                 db_path: str = None):
     reactions = get_available_reactions(db_path)
     if not reactions:
