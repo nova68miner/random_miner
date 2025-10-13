@@ -159,7 +159,7 @@ def main(config: dict):
     iterative_sampling_loop(
         db_path=DB_PATH,
         sampler_file_path=os.path.join(OUTPUT_DIR, "sampler_file.json"),
-        output_path=os.path.join(OUTPUT_DIR, "output.json"),
+        output_path=os.path.join(OUTPUT_DIR, "result.json"),
         config=config,
         save_all_scores=True,
     )
