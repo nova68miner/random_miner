@@ -33,8 +33,7 @@ def get_available_reactions(db_path: str = None) -> List[Tuple[int, str, int, in
         db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "combinatorial_db", "molecules.sqlite"))
     
     try:
-        # Open database in read-only mode to avoid journaling writes on a packaged DB
-        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT rxn_id, smarts, roleA, roleB, roleC FROM reactions")
         results = cursor.fetchall()
@@ -57,8 +56,7 @@ def get_molecules_by_role(role_mask: int, db_path: str) -> List[Tuple[int, str, 
         List of tuples (mol_id, smiles, role_mask) for molecules that match the role
     """
     try:
-        # Open database in read-only mode to avoid WAL/journal creation
-        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT mol_id, smiles, role_mask FROM molecules WHERE (role_mask & ?) = ?", 
