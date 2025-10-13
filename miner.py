@@ -16,6 +16,8 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(PARENT_DIR)
 
+OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "/output")
+
 from nova_ph2.neurons.validator.scoring import score_molecules_json
 import nova_ph2.neurons.validator.scoring as scoring_module
 from random_sampler import run_sampler
@@ -143,14 +145,12 @@ def calculate_final_scores(score_dict: dict,
 
     if save_all_scores:
         all_scores = {"scored_molecules": [(mol["name"], mol["score"]) for mol in batch_scores.to_dict(orient="records")]}
-        
-        if os.path.exists(os.path.join(BASE_DIR, f"all_scores_{current_epoch}.json")):
-            with open(os.path.join(BASE_DIR, f"all_scores_{current_epoch}.json"), "r") as f:
+        all_scores_path = os.path.join(OUTPUT_DIR, f"all_scores_{current_epoch}.json")
+        if os.path.exists(all_scores_path):
+            with open(all_scores_path, "r") as f:
                 all_previous_scores = json.load(f)
-            
             all_scores["scored_molecules"] = all_previous_scores["scored_molecules"] + all_scores["scored_molecules"]
-
-        with open(os.path.join(BASE_DIR, f"all_scores_{current_epoch}.json"), "w") as f:
+        with open(all_scores_path, "w") as f:
             json.dump(all_scores, f, ensure_ascii=False, indent=2)
 
     return batch_scores
@@ -158,8 +158,8 @@ def calculate_final_scores(score_dict: dict,
 def main(config: dict):
     iterative_sampling_loop(
         db_path=DB_PATH,
-        sampler_file_path=os.path.join(BASE_DIR, "sampler_file.json"),
-        output_path=os.path.join(BASE_DIR, "output.json"),
+        sampler_file_path=os.path.join(OUTPUT_DIR, "sampler_file.json"),
+        output_path=os.path.join(OUTPUT_DIR, "output.json"),
         config=config,
         save_all_scores=True,
     )
