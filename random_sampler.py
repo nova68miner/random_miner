@@ -34,7 +34,7 @@ def get_available_reactions(db_path: str = None) -> List[Tuple[int, str, int, in
     
     try:
         abs_db_path = os.path.abspath(db_path)
-         conn = sqlite3.connect(f"file:{abs_db_path}?mode=ro&immutable=1", uri=True)
+        conn = sqlite3.connect(f"file:{abs_db_path}?mode=ro&immutable=1", uri=True)
         conn.execute("PRAGMA query_only = ON")
         cursor = conn.cursor()
         cursor.execute("SELECT rxn_id, smarts, roleA, roleB, roleC FROM reactions")
