@@ -58,7 +58,8 @@ def get_molecules_by_role(role_mask: int, db_path: str) -> List[Tuple[int, str, 
         List of tuples (mol_id, smiles, role_mask) for molecules that match the role
     """
     try:
-        conn = sqlite3.connect(db_path)
+        abs_db_path = os.path.abspath(db_path)
+        conn = sqlite3.connect(f"file:{abs_db_path}?mode=ro&immutable=1", uri=True)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT mol_id, smiles, role_mask FROM molecules WHERE (role_mask & ?) = ?", 
